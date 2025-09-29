@@ -6,6 +6,8 @@
 # - HWP : 문단 텍스트 레코드(66)마다 줄바꿈
 # - 옵션: --hard-wrap N  (긴 줄 강제 줄나눔)
 
+#py -3.13 -X utf8 hwp_flat_lines_json_v2.py "C:\Users\LG\조나우배터리 투자 보고서.hwpx" --out out.json --pretty
+
 from __future__ import annotations
 import sys, struct, zlib, json, re
 from pathlib import Path

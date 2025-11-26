@@ -46,6 +46,24 @@ def parse_docx(file_path: Path):
                 content.append("\n".join(rows))
     return content
 
+def parse_docx_to_blocks(path: str | Path):
+    """
+    서버/다른 스크립트에서 재사용하기 위한 래퍼.
+    DOCX → [블록 문자열, ...] 형태로 그대로 반환.
+    """
+    return parse_docx(Path(path))
+
+
+def parse_docx_to_text(path: str | Path) -> str:
+    """
+    server에서 사용할 DOCX → 전체 텍스트 문자열 변환 헬퍼.
+    (표는 ' | '로 인라인, 줄바꿈은 \n 유지)
+    """
+    p = Path(path)
+    blocks = parse_docx(p)
+    return "\n".join(blocks).strip()
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="DOCX 파일 파서 (본문 + 표, 줄바꿈 유지)")
@@ -79,4 +97,4 @@ if __name__ == "__main__":
 
     print(f"✅ 파싱 완료 → {output_path}")
   
-#uv run python docxparser.py --in "C:/Users/gkseh/hansung/pz1023/그린퓨처 투자보고서.docx"
+#uv run python docx_parser.py --in "C:/Users/gkseh/hansung/pz1023/그린퓨처 투자보고서.docx"

@@ -108,6 +108,34 @@ def pdf_to_text(pdf_path: Path, out_json: Path):
     print(f"✅ 텍스트 추출 완료 → {out_json}")
     return output_data
 
+def parse_pdf_to_text(path: str | Path) -> str:
+    """
+    server에서 사용할 PDF → 전체 텍스트 문자열 변환 헬퍼.
+    파일을 쓰지 않고 텍스트만 반환.
+    """
+    p = Path(path)
+    merged_lines = []
+
+    with pdfplumber.open(p) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
+            if not text:
+                continue
+            for raw in text.split("\n"):
+                cur = clean_line(raw)
+                if not cur:
+                    continue
+                if merged_lines and should_join(merged_lines[-1], cur):
+                    if merged_lines[-1].endswith('-'):
+                        merged_lines[-1] = merged_lines[-1][:-1] + cur
+                    else:
+                        merged_lines[-1] = merged_lines[-1] + cur
+                else:
+                    merged_lines.append(cur)
+
+    return "\n".join(ln for ln in merged_lines if ln).strip()
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PDF 파일 파서 (워드랩 줄바꿈 제거, 의미 줄바꿈 유지)")
@@ -125,4 +153,4 @@ if __name__ == "__main__":
     print(f"📂 PDF 파싱 시작: {input_path.name}")
     pdf_to_text(input_path, output_path)
 
-#uv run python pdfparser.py --in "C:/Users/gkseh/hansung/pz1023/그린퓨처 투자보고서.pdf" --out "C:/Users/gkseh/hansung/pz1023/pdfparser.json"
+#uv run python pdf_parser.py --in "C:/Users/gkseh/hansung/pz1023/그린퓨처 투자보고서.pdf" --out "C:/Users/gkseh/hansung/pz1023/pdfparser.json"

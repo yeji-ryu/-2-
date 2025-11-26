@@ -197,7 +197,7 @@ def _load_chunk2doc(path: str | Path) -> List[Dict]:
             raise ValueError("chunk2doc 항목에 'row', 'doc_id'가 필요합니다.")
     return obj
 
-def _aggregate_doc_scores(scores: np.ndarray, chunk2doc: List[Dict], mode: str = "topMsum", M: int = 3) -> List[Tuple[str, float]]:
+def _aggregate_doc_scores(scores: np.ndarray, chunk2doc: List[Dict], mode: str = "topMsum", M: int = 4) -> List[Tuple[str, float]]:
     buckets = defaultdict(list)
     for m in chunk2doc:
         buckets[m["doc_id"]].append(float(scores[m["row"]]))
@@ -245,7 +245,7 @@ def main():
     p_sd.add_argument("--query_json", required=True, help="['...', ...] or [{'text':'...'}, ...]")
     p_sd.add_argument("--chunk2doc", required=True, help="row→doc_id 매핑 JSON(있으면 문서단위 집계)")
     p_sd.add_argument("--mode", choices=["sum", "max", "topMsum"], default="topMsum")
-    p_sd.add_argument("--M", type=int, default=3)
+    p_sd.add_argument("--M", type=int, default=4)
     p_sd.add_argument("--topk", type=int, default=3)
 
     # ★ 모든 add_parser 정의가 끝난 다음에 parse_args 호출
@@ -297,11 +297,68 @@ def main():
         for doc_id, s in top:
             print(f"{s:12.6f}\t{doc_id}")
 
+# =============== 외부에서 그대로 호출할 수 있는 래퍼 함수 ===============
+def bm25_doc_similarity_from_chunks(
+    chunks: List[str],
+    save_dir: str | Path,
+    chunk2doc_path: str | Path,
+    tokenizer: str = "simple",
+    mode: str = "topMsum",
+    M: int = 4,
+    topk: int = 10,
+) -> List[Tuple[str, float]]:
+    """
+    서버/스크립트에서 직접 호출할 수 있는 BM25 문서 유사도 함수.
+
+    - chunks       : 외부 문서를 청킹한 리스트 ["...", "...", ...]
+    - save_dir     : build-json 때 만든 인덱스 디렉터리 (bm25_matrix.npz, bm25_vocab.json, bm25_docs.json)
+    - chunk2doc_path : prepare-delimited 때 만든 row→doc_id 매핑 JSON
+    - tokenizer    : "simple" | "okt" | "mecab"
+    - mode         : "sum" | "max" | "topMsum"
+    - M            : topMsum에서 상위 몇 개를 더할지
+    - topk         : 상위 몇 개 문서를 돌려줄지
+
+    return: [("doc_id", score), ...] 점수 내림차순
+    """
+    global TOKENIZE, TOKENIZER_NAME
+    TOKENIZE, TOKENIZER_NAME = make_tokenizer(tokenizer)
+
+    # 1) 인덱스 로드
+    W, vocab, _ = load_index(save_dir)
+
+    # 2) 쿼리(외부 문서) 토큰 생성
+    q_tokens: List[str] = []
+    for s in chunks:
+        q_tokens.extend(TOKENIZE(s))
+
+    # 코퍼스 vocab에 있는 토큰만 사용
+    q_tokens = [t for t in q_tokens if t in vocab]
+    if not q_tokens:
+        # 공통 토큰이 없으면 빈 리스트 반환
+        return []
+
+    tf = Counter(q_tokens)
+    ids = [vocab[t] for t in tf.keys()]
+    vals = [float(tf[t]) for t in tf.keys()]
+
+    # 3) 쿼리 벡터 (1 x |V|)
+    q = csr_matrix((vals, ([0] * len(ids), ids)), shape=(1, W.shape[1]), dtype=np.float32)
+
+    # 4) 청크별 점수
+    scores = (W @ q.T).toarray().ravel()
+
+    # 5) row→doc 매핑 불러와서 문서 단위 집계
+    c2d = _load_chunk2doc(chunk2doc_path)
+    ranked = _aggregate_doc_scores(scores, c2d, mode=mode, M=M)
+
+    return ranked[:topk]
+
+
 if __name__ == "__main__":
     main()
 
 
 # 사용 예시 (Windows PowerShell):
-# uv run python bm25test.py prepare-delimited --json "C:\Users\gkseh\hansung\pz1023\ls\test.json" --out_dir "C:\Users\gkseh\hansung\pz1023\bm25_test" --use_title_as_id
-# uv run python bm25test.py build-json --json "C:\Users\gkseh\hansung\pz1023\bm25_test\corpus_chunks.json" --save_dir "C:\Users\gkseh\hansung\pz1023\bm25_test" --tokenizer mecab --k1 1.6 --b 0.72
-# uv run python bm25test.py search-doc --save_dir "C:\Users\gkseh\hansung\pz1023\bm25_test" --query_json "C:\Users\gkseh\hansung\pz1023\ls\flexwavepay.json" --chunk2doc "C:\Users\gkseh\hansung\pz1023\bm25_test\bm25_chunk2doc.json" --mode topMsum --M 3 --topk 3 --tokenizer mecab
+# uv run python bm25.py prepare-delimited --json "C:\Users\LG\HS\test.json" --out_dir "C:\Users\LG\HS\bm25_test" --use_title_as_id
+# uv run python bm25.py build-json --json "C:\Users\LG\HS\corpus_chunks.json" --save_dir "C:\Users\LG\HS\bm25_test" --tokenizer mecab --k1 1.6 --b 0.72
+# uv run python bm25.py search-doc --save_dir "C:\Users\LG\HS\bm25_test" --query_json "C:\Users\LG\HS\flexwavepay.json" --chunk2doc "C:\Users\LG\HS\bm25_chunk2doc.json" --mode topMsum --M 3 --topk 3 --tokenizer mecab

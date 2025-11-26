@@ -101,6 +101,63 @@ def aggregate(scores_by_doc: dict[str, list[float]], mode: str, M: int) -> list[
     ranked.sort(key=lambda x:x[1], reverse=True)
     return ranked
 
+def bm25_search_qdrant(
+    chunks: list[str],
+    qdrant_path: str,
+    collection: str,
+    sparse_name: str,
+    vocab_path: str,
+    chunk2doc_path: str,
+    tokenizer: str = "simple",
+    mode: str = "topMsum",
+    M: int = 4,
+    topk: int = 10,
+) -> list[tuple[str, float]]:
+    """
+    서버에서 호출하는 BM25 문서 검색 함수.
+    결과: [(doc_id, score), ...]
+    """
+    tokenize = make_tokenizer(tokenizer)
+    client = QdrantClient(path=qdrant_path)
+    try:
+        vocab = load_vocab(Path(vocab_path))
+        row2doc = load_chunk2doc(Path(chunk2doc_path))
+
+        idx, val = make_sparse_query(chunks, vocab, tokenize)
+        if not idx:
+            return []
+
+        total = client.count(collection_name=collection, exact=True).count
+
+        hits = client.search(
+            collection_name=collection,
+            query_vector=models.NamedSparseVector(
+                name=sparse_name,
+                vector=models.SparseVector(indices=idx, values=val),
+            ),
+            query_filter=models.Filter(
+                must=[models.FieldCondition(key="type", match=models.MatchValue(value="chunk"))]
+            ),
+            with_payload=True,
+            limit=total,
+        )
+
+        buckets = defaultdict(list)
+        for h in hits:
+            doc_id = h.payload.get("doc_id")
+            if not doc_id:
+                r = h.payload.get("row")
+                if r is not None:
+                    doc_id = row2doc.get(int(r))
+            if doc_id:
+                buckets[doc_id].append(h.score)
+
+        ranked = aggregate(buckets, mode, M)
+        return ranked[:topk]
+    finally:
+        client.close()
+
+
 # ---------- main ----------
 def main():
     ap = argparse.ArgumentParser(description="BM25 search-doc (Qdrant 임베디드 사용)")
@@ -114,7 +171,7 @@ def main():
     p_sd.add_argument("--query_json", required=True, help="['...', ...] or [{'text':'...'}, ...]")
     p_sd.add_argument("--chunk2doc", required=True, help="row→doc_id 매핑 JSON")
     p_sd.add_argument("--mode", choices=["sum","max","topMsum"], default="topMsum")
-    p_sd.add_argument("--M", type=int, default=3)
+    p_sd.add_argument("--M", type=int, default=4)
     p_sd.add_argument("--topk", type=int, default=3)
     p_sd.add_argument("--tokenizer", choices=["simple","okt","mecab"], default="simple")
 
@@ -173,4 +230,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-#uv run python compare.py search-doc --qdrant-path "C:\Users\gkseh\hansung\pz1023\qdrant_storage" --bm25-collection "bm25_chunks" --sparse-name "bm25" --vocab "C:\Users\gkseh\hansung\pz1023\bm25_test\bm25_vocab.json" --query_json "C:\Users\gkseh\hansung\pz1023\ls\flexwavepay.json" --chunk2doc "C:\Users\gkseh\hansung\pz1023\bm25_test\bm25_chunk2doc.json" --mode topMsum --M 3 --topk 3 --tokenizer mecab
+#uv run python word.py search-doc --qdrant-path "C:\Users\gkseh\hansung\pz1023\qdrant_storage" --bm25-collection "bm25_chunks" --sparse-name "bm25" --vocab "C:\Users\gkseh\hansung\pz1023\bm25_test\bm25_vocab.json" --query_json "C:\Users\gkseh\hansung\pz1023\ls\flexwavepay.json" --chunk2doc "C:\Users\gkseh\hansung\pz1023\bm25_test\bm25_chunk2doc.json" --mode topMsum --M 3 --topk 3 --tokenizer mecab

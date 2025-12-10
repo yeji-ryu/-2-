@@ -1,0 +1,90 @@
+# upsert_bm25_only_cli.py
+import json, time, argparse
+from pathlib import Path
+import numpy as np
+from scipy.sparse import load_npz
+from qdrant_client import QdrantClient, models
+
+def load_texts(p: Path):
+    data = json.loads(p.read_text(encoding="utf-8"))
+    if not (isinstance(data, list) and all(isinstance(x, str) for x in data)):
+        raise ValueError("JSON은 ['문장1', ...] 리스트여야 합니다.")
+    return data
+
+def load_chunk2doc(p: Path):
+    obj = json.loads(p.read_text(encoding="utf-8"))
+    if not isinstance(obj, list):
+        raise ValueError("chunk2doc는 리스트여야 합니다.")
+    return {int(m["row"]): str(m["doc_id"]) for m in obj}
+
+def batched(it, n):
+    buf=[]
+    for x in it:
+        buf.append(x)
+        if len(buf)>=n:
+            yield buf; buf=[]
+    if buf: yield buf
+
+def main():
+    ap = argparse.ArgumentParser(description="BM25(CSR)만 로컬 Qdrant(임베디드)에 업서트")
+    ap.add_argument("--json", required=True)
+    ap.add_argument("--bm25", required=True)
+    ap.add_argument("--chunk2doc", required=True)
+    ap.add_argument("--qdrant-path", required=True)
+    ap.add_argument("--collection", required=True)
+    ap.add_argument("--sparse-name", default="bm25")
+    ap.add_argument("--batch", type=int, default=1000)
+    ap.add_argument("--recreate", action="store_true")
+    args = ap.parse_args()
+
+    texts = load_texts(Path(args.json))
+    W = load_npz(args.bm25).astype(np.float32)
+    row2doc = load_chunk2doc(Path(args.chunk2doc))
+
+    N = len(texts)
+    if W.shape[0] != N:
+        raise SystemExit(f"행 불일치: texts={N}, bm25_rows={W.shape[0]}")
+
+    client = QdrantClient(path=args.qdrant_path)
+
+    if args.recreate and client.collection_exists(args.collection):
+        print(f"[Qdrant] delete collection: {args.collection}")
+        client.delete_collection(collection_name=args.collection)
+
+    if not client.collection_exists(args.collection):
+        print(f"[Qdrant] create collection: {args.collection} (sparse '{args.sparse_name}')")
+        client.create_collection(
+            collection_name=args.collection,
+            vectors_config={},  # dense 없음
+            sparse_vectors_config={args.sparse_name: models.SparseVectorParams()},
+        )
+    else:
+        print(f"[Qdrant] use existing collection: {args.collection}")
+
+    indptr, indices, data = W.indptr, W.indices, W.data
+
+    def gen_points():
+        for row in range(N):
+            s, e = indptr[row], indptr[row+1]
+            idx = indices[s:e].tolist()
+            val = data[s:e].astype(float).tolist()
+            yield models.PointStruct(
+                id=row,
+                vector={args.sparse-name if False else args.sparse_name: models.SparseVector(indices=idx, values=val)},
+                payload={"type":"chunk","row":row,"doc_id":row2doc.get(row),"text":texts[row]},
+            )
+
+    total=0; t0=time.time()
+    for i,b in enumerate(batched(gen_points(), args.batch),1):
+        client.upsert(collection_name=args.collection, points=b, wait=True)
+        total+=len(b); print(f"[Upsert] batch {i} (+{len(b)}) total={total}")
+
+    print(f"[Done] {total} points in {time.time()-t0:.2f}s")
+    print("count:", client.count(collection_name=args.collection, exact=True).count)
+    client.close()
+
+if __name__=="__main__":
+    main()
+
+
+#uv run python qdrant_sparse.py bm25 --json "C:\Users\gkseh\hansung\pz1023\bm25_test\bm25_docs.json" --bm25 "C:\Users\gkseh\hansung\pz1023\bm25_test\bm25_matrix.npz" --chunk2doc "C:\Users\gkseh\hansung\pz1023\bm25_test\bm25_chunk2doc.json" --qdrant-path "C:\Users\gkseh\hansung\pz1023\qdrant_storage" --collection "bm25_chunks" --sparse-name "bm25" --batch 1000 --recreate

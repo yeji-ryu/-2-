@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>문서 분석 중...</title>
+
+    <!-- Pretendard 폰트 -->
+    <link rel="stylesheet" href="upload.css">
+    <link rel="stylesheet" href="loading.css">
+</head>
+
+<body>
+
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <div class="loading-title" style="font-size:28px; font-weight:700;">문서 분석 중...</div>
+        <div class="loading-desc" style="font-size:16px;">업로드된 문서를 기반으로 의미적 유사도 및 단어 유사도 분석을 수행하고 있습니다.</div>
+        <div class="loading-desc" style="font-size:16px;">잠시만 기다려주세요.</div>
+    </div>
+
+    <!-- run_query 결과 -->
+    <div id="runquery-section" style="display:none;">
+        <h1
+            style="text-align:center; font-size:24px; font-weight:700; margin-top: 0; margin-bottom: 40; padding-top: 0;">
+            TOP3 유사 문서</h1>
+        <div id="runquery-result" class="result-list"></div>
+    </div>
+
+    <div id="llm-loading" style="margin-top: 40px; display:none; text-align:center;">
+        <div class="spinner" style="width:60px; height:60px; border-width:5px; margin-bottom:15px;"></div>
+        <div style="font-size:18px; font-weight:600;">LLM 요약 생성 중입니다...</div>
+    </div>
+
+    <button id="go-result-btn">결과 페이지로 이동</button>
+
+    <script src="loading.js"></script>
+
+</body>
+</html>

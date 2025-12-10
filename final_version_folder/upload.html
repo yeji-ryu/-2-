@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload - HS Capital Investment</title>
+    <link rel="stylesheet" href="upload.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <script src="https://cdn.jsdelivr.net/npm/event-source-polyfill@1.0.26/dist/eventsource.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header class="main-header">
+            <a class="logo">
+                <img src="images/logo.svg" alt="HS Capital Investment Logo">
+                <span>AI 기반 유사 문서 검출 시스템</span>
+            </a>
+        </header>
+
+        <main class="upload-main">
+            <h1>Upload</h1>
+
+            <div class="uploader-card">
+                <div class="card-header">
+                    <div>
+                        <h2>Document Upload</h2>
+                        <p>Add your document here (Max 1 file)</p>
+                    </div>
+                </div>
+
+                <div class="drop-zone">
+                    <input type="file" id="file-input" hidden>
+                    <img src="images/icon-upload.svg" alt="Upload Icon">
+                    <p>Drag your file(s) to start uploading</p>
+                    <span>OR</span>
+                    <button type="button" class="browse-btn">Browse files</button>
+                </div>
+
+                <p class="support-text">Only support .hwpx, .docx, .pdf</p>
+
+                <div class="file-list"></div>
+
+                <div class="card-footer">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="button" class="next-btn">Next</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 🔥 JS 외부 분리 -->
+    <script src="upload.js"></script>
+</body>
+
+</html>

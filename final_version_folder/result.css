@@ -1,0 +1,41 @@
+body {
+    font-family: Arial;
+    padding: 20px;
+    position: relative;
+}
+
+/* 🔹 우측 상단 홈 버튼 스타일 */
+.home-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: black;
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.home-btn:hover {
+    background: #000;
+    /* Hover 시 배경 검정 */
+    color: #fff;
+    /* Hover 시 글씨 흰색 */
+}
+
+.markdown-body {
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px 35px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+    filter: grayscale(100%);
+}

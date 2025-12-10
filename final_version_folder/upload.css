@@ -1,0 +1,227 @@
+/* ------------------------------
+   기본 페이지 스타일
+------------------------------ */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif;
+    margin: 0;
+    background-color: #FFF;
+    color: #121212;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+/* ------------------------------
+   헤더
+------------------------------ */
+.main-header {
+    display: flex;
+    align-items: center;
+    padding: 25px 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.logo img {
+    height: 32px;
+    margin-right: 12px;
+}
+
+/* ------------------------------
+   메인 업로드 UI
+------------------------------ */
+.upload-main {
+    text-align: center;
+    padding: 40px 0;
+}
+
+.upload-main h1 {
+    font-size: 52px;
+    font-weight: 700;
+    margin-top: 0px;
+    margin-bottom: 30px;
+}
+
+/* ------------------------------
+   업로드 카드
+------------------------------ */
+.uploader-card {
+    max-width: 600px;
+    margin: auto;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    text-align: left;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.card-header p {
+    margin: 0;
+    color: #888;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+}
+
+/* ------------------------------
+   드롭존 영역
+------------------------------ */
+.drop-zone {
+    border: 2px dashed #d0d0d0;
+    border-radius: 12px;
+    padding: 40px;
+    margin: 30px 0;
+    text-align: center;
+    background-color: #f6f6f6;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.drop-zone.dragover {
+    border-color: rgb(175, 175, 175);
+    background-color: #d9d9d9;
+}
+
+.drop-zone img {
+    margin-bottom: 16px;
+}
+
+.drop-zone p {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.drop-zone span {
+    color: #888;
+    margin: 10px 0;
+}
+
+.browse-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.browse-btn:hover {
+    background-color: #dbdbdb;
+    color: black;
+}
+
+/* ------------------------------
+   지원 형식 텍스트
+------------------------------ */
+.support-text {
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+}
+
+/* ------------------------------
+   파일 정보 리스트
+------------------------------ */
+.file-list {
+    margin-top: 20px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.file-icon {
+    font-size: 32px;
+    margin-right: 15px;
+    filter: grayscale(100%);
+}
+
+.file-info .file-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.file-info .file-size {
+    font-size: 12px;
+    color: #888;
+}
+
+/* ------------------------------
+   Footer 버튼
+------------------------------ */
+.card-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.cancel-btn {
+    background: #eee;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    background-color: #dbdbdb;
+    color: black;
+}
+
+.next-btn {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.next-btn:hover {
+    background-color: rgb(54, 54, 54);
+    color: white;
+}
+
+img {
+    filter: grayscale(100%);
+}

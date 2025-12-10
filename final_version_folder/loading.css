@@ -1,0 +1,100 @@
+body {
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.loading-container {
+    color: #333;
+}
+
+/* 로딩 스피너 */
+.spinner {
+    width: 110px;
+    height: 110px;
+    border: 9px solid #d9d9d9;
+    border-top-color: #2c3e50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 25px auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 원그래프 + 중앙정렬 */
+.result-list {
+    display: flex;
+    justify-content: center;
+    gap: 70px;
+    margin-top: 25px;
+}
+
+.doc-card {
+    width: 150px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    word-break: keep-all;
+}
+
+.circle-chart {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.circle-chart svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: #e6e9ef;
+    stroke-width: 12;
+}
+
+.circle-progress {
+    fill: none;
+    stroke: #2c3e50;
+    stroke-width: 12;
+    stroke-linecap: round;
+}
+
+.circle-text {
+    font-size: 22px;
+    font-weight: 700;
+    fill: black;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+/* 결과 페이지 이동 버튼 */
+#go-result-btn {
+    margin-top: 40px;
+    padding: 14px 28px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: white;
+    color: black;
+    display: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+#go-result-btn:hover {
+    background-color: black;
+    color: white;
+    transform: translateY(-2px);
+}

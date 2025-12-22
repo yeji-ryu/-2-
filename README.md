@@ -47,6 +47,8 @@ Our model is designed specifically for **investment reporting language, structur
 
 ## 📂 Repository Structure  
 
+```
+
 root
 ├── corpus_docs/ # Internal confidential investment analyst reports (~30 docs, each ~30 pages)
 ├── external_docs/ # External documents, diverse domains and topics
@@ -61,10 +63,7 @@ root
 ├── README.md
 └── video/ # Website demo + system visualization recording
 
-yaml
-코드 복사
-
----
+```
 
 ## 🧠 System Architecture
 
@@ -103,45 +102,9 @@ and **produces a dynamic hybrid score + explanation**.
 
 ## 📄 Output Example (Single Markdown Page)
 
-Document Similarity Analysis Result
-Input Target
-Uploaded document: 누누푼토리 투자보고서 (external)
-
-Top Similar Internal Documents (Hybrid Score Ranking)
-1️⃣ 시그마이더투자보고서 — Hybrid: 48.38
-2️⃣ 라온투자보고서 — Hybrid: 43.22
-3️⃣ 스카이라인투자보고서 — Hybrid: 35.46
-
-Cosine Similarity Highlights
-Sigma battery report: 0.22
-
-Future battery report: 0.24
-
-Medical Pharma 2024: 0.19
-
-BM25 Highlights
-Sigma battery: 57.29
-
-Future battery: 52.12
-
-Skyline medical: 51.81
-
-Extracted Similar Sentences (Semantic Match)
-“기술특허 관련 SoC 자산 세부 영향과 게이트웨이 리스크 요건 분석 내용이 포함된 보고서”
-
-“핵심 동향 분석: 5년 IRR 예측 기반 투자수익 분석 수치 포함”
-
-Summary Interpretation
-Similar industry category (Battery & industrial tech)
-
-Overlapping sentence structure and concept alignment
-
-High BM25 keyword locality match
-
-IRR / CAGR / forecast metrics similar
-
-yaml
-코드 복사
+<p align="center">
+  <img src="./video/example.png">
+</p>
 
 → This page is automatically generated for each upload.
 
@@ -170,6 +133,7 @@ A running webpage prototype demonstrating:
 | Sparse Retrieval | BM25 (rank_bm25) |
 | Vector DB | Qdrant |
 | Hybrid Scoring | LLM-based evaluation |
+| LLM Model | Ollama |
 | Similarity Output | Markdown auto-generation |
 
 ---
@@ -178,8 +142,7 @@ A running webpage prototype demonstrating:
 
 - Python, FastAPI  
 - Qdrant, BM25  
-- LangChain, ChatGPT/Gemini  
-- Docker / GitHub Actions  
+- LangChain, ChatGPT/Gemini   
 - HTML/JS web demo  
 - GitHub + Notion collaboration  
 
@@ -199,8 +162,8 @@ A running webpage prototype demonstrating:
 
 | Name     | Major | Role |
 |----------|------|-----|
-| Yeji Ryu | CS + Security | NLP / Modeling |
-| Donggyun Han | CS + Security | Backend / Architecture |
+| Yeji Ryu | Security | NLP / Modeling |
+| Donggyun Han | Security | Backend / Architecture |
 
 ---
 

@@ -1,59 +1,218 @@
-# 🛡️ 융합보안 프리캡스톤 디자인 프로젝트  
+# 🛡️ AI-Based Confidential Investment Report Similarity & Leakage Detection System  
 
-> ✨ **융합보안학과 전공수업 – 산학협력 프로젝트** ✨  
-> 저희는 **AI 기반 투자 보고서 기밀 유출 방지 시스템**을 개발합니다.  
-> 애널리스트의 부주의한 보고서 작성 과정에서 발생할 수 있는 **투자 기밀 유출**을 사전에 탐지·차단하여,  
-> **주가 조작과 같은 시장 교란 및 사회적 피해를 방지**하는 것이 목표입니다.  
+A research & engineering project focused on preventing **internal investment document leakage** using **AI-driven document similarity analysis**.  
+The system detects confidential content reuse by comparing newly uploaded reports with internally stored analyst documents using hybrid scoring (LLM + BM25 + Embedding cosine similarity).  
 
 ---
 
-## 👩‍💻 팀 소개
-| 이름   | 학년  | 역할             |
-|--------|-------|------------------|
-| 유예지 | 2학년 | 미정 |
-| 한동균 | 3학년 | 미정 |
+## 🌐 Notion Project Space  
+🔗 https://www.notion.so/2-26bcf407bc8880e38e86e00acd031929?source=copy_link  
+This space documents early project planning, brainstorming notes, architecture drafts, and concept design.
 
 ---
 
-## 🤝 협력 기관
-- **소만사 (SOMANSA)**  
-  > *“소프트웨어를 만드는 사람들”*  
-  개인정보 보호 및 데이터 보안에 특화된 전문 보안 기업  
+## 📌 Project Objective  
+
+In the financial industry, a single leaked forecast number, valuation metric, or confidential chart can manipulate market behavior and cause enormous socioeconomic damage.  
+Cases such as the **SG Securities market crash** and **CJ ENM stock manipulation scandal** prove the real-world impact of internal data misuse.  
+
+This project builds a system to:  
+
+- Embed internal investment reports into vector storage  
+- Compare new documents against internal data using AI  
+- Detect meaningful similarity beyond keyword matching  
+- Identify potential confidential information leakage  
+- Provide automated similarity summaries and rankings  
+
+The goal is to **catch internal information reuse before publication**.
 
 ---
 
-## 🎯 프로젝트 개요
-- **수업명**: 융합보안 프리캡스톤 디자인  
-- **프로젝트명**: AI 기반 유사 문서 검출 시스템  
-- **팀명**: 2조
-- **주제**: 투자 보고서 기밀 유출 방지 시스템  
-- **목표**:  
-  - 사내에 축적된 **투자 보고서, 내부 분석 리포트**를 벡터DB에 임베딩 저장  
-  - 업로드되는 문서와 **AI 기반 유사도 비교** 수행  
-  - 내부 기밀 수치·예측치가 외부 보고서에 포함될 경우 **탐지 및 차단**  
-  - 애널리스트의 부주의로 인한 **기밀 유출 및 시장 교란 방지**  
+## 🚀 Key Innovation vs Traditional DLP Systems  
+
+Traditional DLP systems rely heavily on patterns, keywords, and regex → detecting only literal matches.  
+Our system:
+
+| Property | Old DLP | Generic AI Similarity | Proposed System |
+|---------|--------|----------------------|----------------|
+| Method | Keyword / Regex | Embedding or BM25 | Hybrid Embedding + BM25 + LLM |
+| Contextual Understanding | Very Low | Medium | High |
+| Domain Adapted | No | Partially | Fully industry-specific |
+| Accuracy Boost | Manual rules | Statistical weights | LLM scoring refinement |
+| Output | True/False | Similarity scores | Context-aware explanations |
+
+Our model is designed specifically for **investment reporting language, structure, terminology and writing patterns.**
 
 ---
 
-## 🛠️ 기술 스택
-- **Backend**: Python, FastAPI  
-- **AI/ML**: LangChain, LLM(Gemini/ChatGPT), FAISS/Pinecone  
-- **Database**: PostgreSQL  
-- **Infra/DevOps**: Docker, GitHub Actions  
-- **Collaboration**: GitHub, Notion, KakaoTalk  
+## 📂 Repository Structure  
+
+root
+├── corpus_docs/ # Internal confidential investment analyst reports (~30 docs, each ~30 pages)
+├── external_docs/ # External documents, diverse domains and topics
+│
+├── v1_folder/ # Early prototype version
+├── v2_folder/ # Second iteration with improved pipeline
+├── final_version_folder/ # Final optimized model + all final notebooks and scripts
+│
+├── document/ # Progress reports + festival workbook + weekly documentation
+│
+├── fake_report_gemini.py # LLM-based automated internal document generation script
+├── README.md
+└── video/ # Website demo + system visualization recording
+
+yaml
+코드 복사
 
 ---
 
-## 🌱 앞으로의 방향
-- 📌 **AI 기반 문서 유사도 판별 모델** 설계 및 벡터 스토어 구축  
-- 📌 **투자 보고서 데이터셋** 기반 프로토타입 개발  
-- 📌 협력 기업 피드백 반영 → **실무 적용 가능성 검토**  
-- 📌 2개월간 기능 개발 및 최종 발표 진행  
+## 🧠 System Architecture
+
+The system processes documents through **two independent similarity paths** and merges them using LLM evaluation:
+
+### 🔹 Embedding Path (Cosine Similarity)
+1. Chunk documents into meaningful blocks  
+2. Embed using `bge-m3-ko`
+3. Store vectors in Qdrant
+4. Extract cosine similarity top-n results
+
+→ Measures semantic similarity beyond vocabulary overlap  
 
 ---
 
-## 🐣 우리만의 키워드
-- **투자 보고서 보안**  
-- **AI 기반 기밀 탐지**  
-- **시장 안정성 확보**  
-- **실시간 보안 피드백**  
+### 🔹 BM25 Sparse Vector Path
+1. Tokenize & normalize  
+2. Push into BM25 ranking index  
+3. Extract TF-IDF based similarity  
+
+→ Measures keyword & term frequency structural similarity  
+
+---
+
+### 🔹 LLM Hybrid Decision Layer  
+LLM reads both scoring structures extracted from:
+
+- cosine similarity  
+- BM25 ranking  
+- percentile distributions  
+- trim scoring patterns  
+
+and **produces a dynamic hybrid score + explanation**.
+
+---
+
+## 📄 Output Example (Single Markdown Page)
+
+Document Similarity Analysis Result
+Input Target
+Uploaded document: 누누푼토리 투자보고서 (external)
+
+Top Similar Internal Documents (Hybrid Score Ranking)
+1️⃣ 시그마이더투자보고서 — Hybrid: 48.38
+2️⃣ 라온투자보고서 — Hybrid: 43.22
+3️⃣ 스카이라인투자보고서 — Hybrid: 35.46
+
+Cosine Similarity Highlights
+Sigma battery report: 0.22
+
+Future battery report: 0.24
+
+Medical Pharma 2024: 0.19
+
+BM25 Highlights
+Sigma battery: 57.29
+
+Future battery: 52.12
+
+Skyline medical: 51.81
+
+Extracted Similar Sentences (Semantic Match)
+“기술특허 관련 SoC 자산 세부 영향과 게이트웨이 리스크 요건 분석 내용이 포함된 보고서”
+
+“핵심 동향 분석: 5년 IRR 예측 기반 투자수익 분석 수치 포함”
+
+Summary Interpretation
+Similar industry category (Battery & industrial tech)
+
+Overlapping sentence structure and concept alignment
+
+High BM25 keyword locality match
+
+IRR / CAGR / forecast metrics similar
+
+yaml
+코드 복사
+
+→ This page is automatically generated for each upload.
+
+---
+
+## 🎥 Web Demo Video  
+
+A running webpage prototype demonstrating:
+
+- Document upload UI  
+- Automated report generation  
+- Similarity computation visualization  
+- Ranked document results  
+
+📁 video/ folder contains:  
+- live system demo  
+- web interface workflow  
+
+---
+
+## 🔬 Models + Algorithms Used
+
+| Component | Implementation |
+|----------|---------------|
+| Embedding Model | `bge-m3-ko` |
+| Sparse Retrieval | BM25 (rank_bm25) |
+| Vector DB | Qdrant |
+| Hybrid Scoring | LLM-based evaluation |
+| Similarity Output | Markdown auto-generation |
+
+---
+
+## 🏗️ Development Stack
+
+- Python, FastAPI  
+- Qdrant, BM25  
+- LangChain, ChatGPT/Gemini  
+- Docker / GitHub Actions  
+- HTML/JS web demo  
+- GitHub + Notion collaboration  
+
+---
+
+## 📌 Future Improvements  
+
+- Multilingual support  
+- OCR table/graph extraction  
+- Layout-aware embeddings  
+- multimodal similarity analysis  
+- financial ontology knowledge graph  
+
+---
+
+## 👤 Team Members
+
+| Name     | Major | Role |
+|----------|------|-----|
+| Yeji Ryu | CS + Security | NLP / Modeling |
+| Donggyun Han | CS + Security | Backend / Architecture |
+
+---
+
+## 📄 Academic Context
+
+University course project:  
+**Integrated Security Pre-Capstone Design — Industry Collaboration Track**
+
+Partner company:  
+**SOMANSA – Data Privacy & Enterprise Security**
+
+---
+
+Thanks for reading this repository!  
+Feel free to explore the codebase and research results.  
